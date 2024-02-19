@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Dec 26 23:34:10 2023
+Based on the purecmaes matlab code from Nikolaus Hansen:
 
-@author: Admin
+https://cma-es.github.io/cmaes_sourcecode_page.html#matlab
+
 """
 
 import numpy as np
@@ -117,5 +118,3 @@ class CMA_opt:
             self.best_fitness = current_best_fitness
 
         self.counteval += 1
-
-# ... [rest of the class code]

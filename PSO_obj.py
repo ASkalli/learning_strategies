@@ -1,3 +1,8 @@
+"""
+This is a simple implementation of the Particle Swarm Optimization algorithm.
+
+"""
+
 import numpy as np
 
 class PSO_opt:

@@ -1,3 +1,12 @@
+"""
+Simple SPSA classes for optimization, 
+
+probably too many methods for such a simple algorithm
+
+
+"""
+
+
 import numpy as np
 
 class SPSA_opt:
@@ -42,12 +51,4 @@ class SPSA_opt:
         """Update the parameters based on the approximated gradient."""
         #ak = self.alpha / (self.iteration + 1)**0.602
         self.params -= step         
-        return self.params 
-
-    def optimize(self, loss_func, num_iterations=100):
-        """Optimize the parameters using the SPSA algorithm."""
-        for self.iteration in range(1, num_iterations + 1):
-            params_plus,params_minus = self.perturb_parameters()
-            gradient = self.approximate_gradient_func(loss_func)
-            self.update_parameters(gradient)
         return self.params

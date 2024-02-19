@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wed Dec 27 20:44:00 2023
+Based mostly on the oto code from David Ha:
 
-@author: Admin
+https://blog.otoro.net/2017/10/29/visual-evolution-strategies/
 """
 
 import numpy as np
@@ -127,9 +127,7 @@ class PEPG_opt:
         if self.learning_rate_decay < 1 and self.learning_rate > self.learning_rate_limit:
             self.learning_rate *= self.learning_rate_decay
     
-        # ... [rest of the code, if any]
-    
-        return 0  # As in MATLAB, returning error code; adjust as needed
+        return 0 
 
 
 # Example usage:
