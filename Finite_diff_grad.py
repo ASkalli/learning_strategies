@@ -1,5 +1,5 @@
 """
-Simple SPSA class for optimization, 
+Simple Finite difference (stupid gradient) class for optimization, 
 
 probably too many methods for such a simple algorithm
 
@@ -9,36 +9,33 @@ probably too many methods for such a simple algorithm
 
 import numpy as np
 
-class SPSA_opt:
+class FD_opt:
     def __init__(self, params, alpha=0.01,epsilon=1e-5):
         self.params = np.array(params)  # Initial parameters to optimize
         self.alpha = alpha  # Step size
         self.epsilon = epsilon  # Perturbation size
         self.iteration = 0  # Track the current iteration
-        self.delta = None
+        self.n_params = None  # Number of parameters to perturb
 
     def perturb_parameters(self):
-        """Generate perturbation vector."""
-        self.delta = (np.random.rand(*self.params.shape) > 0.5) * 2 - 1  # Random {-1, 1} for each parameter
-        params_plus = self.params + self.epsilon * self.delta
-        params_minus = self.params - self.epsilon * self.delta
+        """Perturb parameters and return them: params +/- epsilon."""
+        params_plus = self.params + self.epsilon 
+        params_minus = self.params - self.epsilon 
         return params_plus,params_minus
 
     def approximate_gradient_func(self, loss_func):
         """Approximate the gradient of the loss function; if you have a loss function you can pass as parameter"""
-        params_plus = self.params + self.epsilon  * self.delta
-        params_minus = self.params - self.epsilon  * self.delta
+        params_plus = self.params + self.epsilon  
+        params_minus = self.params - self.epsilon  
         loss_plus = loss_func(params_plus)
         loss_minus = loss_func(params_minus)
-        gradient = ((loss_plus - loss_minus) / (2 * self.epsilon  * np.var(self.delta))) *self.delta
+        gradient = (loss_plus - loss_minus) / (2 * self.epsilon )
         return gradient
     
     def approximate_gradient(self,loss_plus ,loss_minus):
         """Approximate the gradient of the loss function, with precalculated loss values"""
-        if np.var(self.delta) == 0:
-            gradient = (loss_plus - loss_minus) / (2 * self.epsilon) *self.delta
-        else :
-            gradient = ((loss_plus - loss_minus) / (2 * self.epsilon  * np.var(self.delta))) *self.delta
+        
+        gradient = ((loss_plus - loss_minus) / (2 * self.epsilon ))
         return gradient
     
     def update_parameters(self, gradient):
