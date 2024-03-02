@@ -71,7 +71,7 @@ class CMA_opt:
         if self.population.shape != (self.N_dim, self.pop_size):
             raise ValueError("Generated population size does not match the specified dimensions")
 
-        return self.population
+        return np.transpose(self.population)
 
     def tell(self, reward_table):
         # Validation check for reward_table
