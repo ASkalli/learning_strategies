@@ -13,19 +13,23 @@ class Tiny_convnet(nn.Module):
         super(Tiny_convnet, self).__init__()
             
         # Convolutional layer (sees 28x28x1 image tensor)
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=5, stride=1, padding=2) # Output: 14x14x8
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=5, stride=1, padding=2)  # Output: 28x28x8
+        # Max Pooling layer (reduces size to 14x14x8)
+        self.pool1 = nn.MaxPool2d(kernel_size=2, stride=2)  # Output: 14x14x8
         # Convolutional layer (sees 14x14x8 image tensor)
-        self.conv2 = nn.Conv2d(8, 16, kernel_size=5, stride=1, padding=2) # Output: 7x7x16
-        # Global Average Pooling (GAP) layer
-        self.gap = nn.AdaptiveAvgPool2d(1) # Output: 1x1x16
-        # Fully connected layer
-        self.fc = nn.Linear(16, 10) # 10 output classes
+        self.conv2 = nn.Conv2d(8, 16, kernel_size=5, stride=1, padding=2)  # Output: 14x14x16
+        # Max Pooling layer (reduces size to 7x7x16)
+        self.pool2 = nn.MaxPool2d(kernel_size=2, stride=2)  # Output: 7x7x16
+        # Fully connected layer, adjusted for the output size of the last max pooling layer
+        self.fc = nn.Linear(7 * 7 * 16, 10)  # 10 output classes
         
     def forward(self, x):
         x = F.relu(self.conv1(x))
+        x = self.pool1(x)  # Apply first max pooling
         x = F.relu(self.conv2(x))
-        x = self.gap(x)
-        x = x.view(x.size(0), -1) # Flatten
+        x = self.pool2(x)  # Apply second max pooling
+        # Flatten the output for the fully connected layer
+        x = x.view(x.size(0), -1)  # Flatten
         x = self.fc(x)
         return x
     
@@ -33,14 +37,43 @@ class Tiny_convnet(nn.Module):
         """
         Counts the number of trainable parameters in a PyTorch model.
 
-        Parameters:
-        - model (nn.Module): The PyTorch model.
-
-        Returns:
-        - int: The total number of trainable parameters in the model.
         """
         return sum(p.numel() for p in self.parameters() if p.requires_grad)
+    
+    def get_params(self):
+        """
+        method that returns parameters of the model as a 1D array.
+        """
+        params_list = []
+        for param in self.parameters():
+            #view(-1) flattens the tensor
+            params_list.append(param.view(-1))
+            
+        full_params = torch.cat(params_list)
+        return full_params
+    
+    def set_params(self, params_to_send):
+        """
+        Method to set parameters in the neural network for online training.
+        params_to_send is a flattened array of parameters.
+        """
+        current_idx = 0
+        for param in self.parameters():
+            param_numel = param.data.numel()
+            #we get the shape of the parameter and then copy the data from the flattened array
+            new_param =  torch.reshape(torch.from_numpy(params_to_send[current_idx: current_idx + param_numel ]),shape=param.data.shape)
+            param.data.copy_(new_param)
+            current_idx += param_numel
 
+    
+    def forward_pass_params(self, params_to_send, X):
+        """
+        This method is a forward pass that also takes in the parameters of the neural network as a variable,
+        to use in online learning.
+        """
+        self.set_params(params_to_send)
+        logits = self.forward(X)
+        return logits
 class Custom_dataset(torch.utils.data.Dataset):
     def __init__(self, features, labels):
         self.features = features
@@ -126,7 +159,7 @@ def train_online_pop_NN(model, n_epochs, train_loader, test_loader, loss, optimi
             optimizer.tell(rewards)
             best_params = coordinates[np.argmin(rewards),:]
             best_reward.append(np.min(rewards))
-            
+            print(i,end='r')
             #print accuracy every 100 steps for the test set
             if (i+1) % 100 == 0:
                 model.eval()
