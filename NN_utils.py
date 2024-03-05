@@ -159,9 +159,9 @@ def train_online_pop_NN(model, n_epochs, train_loader, test_loader, loss, optimi
             optimizer.tell(rewards)
             best_params = coordinates[np.argmin(rewards),:]
             best_reward.append(np.min(rewards))
-            print(i,end='r')
+            print('\r{i+1}',end='')
             #print accuracy every 100 steps for the test set
-            if (i+1) % 100 == 0:
+            if (i+1) % 10 == 0:
                 model.eval()
                 correct = 0 
                 total = 0
