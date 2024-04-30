@@ -10,7 +10,7 @@ class PSO_opt:
         self.X = X_init  # Position vector for the particles
         self.V = V_init  # Velocity vector for the particles
         self.p_best = np.array(X_init)  # Best position found by each particle, this is a vector
-        self.N_population = X_init.shape[1]
+        self.N_population = params['pop_size']
         self.N_dim = X_init.shape[0]
         self.w_inertia = params['w'] # inertia basically keeps the particle going along the same trajectory
         self.c_1 = params['c_1'] # cognitive coefficient influences the search of the individual particle
@@ -55,7 +55,7 @@ class PSO_opt:
         self.X[exceed_upper] = self.upper_bound
         self.X[exceed_lower] = self.lower_bound
 
-        return self.X
+        return np.transpose(self.X)
 
     def tell(self, reward_table):
 

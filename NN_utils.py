@@ -64,8 +64,7 @@ class Tiny_convnet(nn.Module):
             new_param =  torch.reshape(torch.from_numpy(params_to_send[current_idx: current_idx + param_numel ]),shape=param.data.shape)
             param.data.copy_(new_param)
             current_idx += param_numel
-
-    
+ 
     def forward_pass_params(self, params_to_send, X):
         """
         This method is a forward pass that also takes in the parameters of the neural network as a variable,
@@ -74,6 +73,7 @@ class Tiny_convnet(nn.Module):
         self.set_params(params_to_send)
         logits = self.forward(X)
         return logits
+    
 class Custom_dataset(torch.utils.data.Dataset):
     def __init__(self, features, labels):
         self.features = features
@@ -161,7 +161,7 @@ def train_online_pop_NN(model, n_epochs, train_loader, test_loader, loss, optimi
             best_reward.append(np.min(rewards))
             print('\r{i+1}',end='')
             #print accuracy every 100 steps for the test set
-            if (i+1) % 10 == 0:
+            if (i+1) % 100 == 0:
                 model.eval()
                 correct = 0 
                 total = 0
@@ -169,6 +169,7 @@ def train_online_pop_NN(model, n_epochs, train_loader, test_loader, loss, optimi
                     features = features.to(device)
                     labels = labels.to(device)
                     Y_pred = model.forward_pass_params(best_params,features)
+                    loss_value = loss(Y_pred,labels)
                     _, predicted = torch.max(Y_pred.data, 1)
                     total += labels.size(0)
                     correct += (predicted == labels).sum().item()
@@ -177,6 +178,68 @@ def train_online_pop_NN(model, n_epochs, train_loader, test_loader, loss, optimi
                 print(f'Epoch [{epoch+1}/{n_epochs}], Step [{i+1}/{len(train_loader)}], Loss: {loss_value.item()}, Test Accuracy: {accuracy}%')
     return accuracy_list, best_reward
     
+
+def train_online_SPSA_NN(model, n_epochs, train_loader, test_loader, loss, spsa_optimizer,adam_optimizer):
+    "function to train a model using the population based training algorithm,  returns the accuracy and best reward lists"
+    
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model.to(device)
+
+    print(f"Using {device} device")
+    print(model)
+    
+    best_reward = []
+    accuracy_list = []
+    for epoch in range(n_epochs):
+        model.eval()
+        for i, (features,labels) in enumerate(train_loader):
+            
+            params_plus,params_minus = spsa_optimizer.perturb_parameters()
+            
+            
+            if device == 'cuda':
+                features = features.to(device)
+                labels = labels.to(device)
+                Y_pred_plus = model.forward_pass_params(params_plus,features)
+                Y_pred_minus = model.forward_pass_params(params_minus,features)
+            if device == 'cpu':
+                Y_pred_plus = model.forward_pass_params(params_plus,features)
+                Y_pred_minus = model.forward_pass_params(params_minus,features)
+                
+            loss_value_plus = loss(Y_pred_plus,labels)
+            loss_value_minus = loss(Y_pred_minus,labels)
+            
+            reward_plus = loss_value_plus.detach().cpu().item()
+            reward_minus = loss_value_minus.detach().cpu().item()
+            
+            grad_spsa = spsa_optimizer.approximate_gradient(reward_plus ,reward_minus)
+            step = adam_optimizer.step(grad_spsa)
+            
+            current_params= spsa_optimizer.update_parameters_step(step)
+
+            best_reward.append(np.min([reward_plus,reward_minus]))
+            print('\r{i+1}',end='')
+            #print accuracy every 100 steps for the test set
+            if (i+1) % 100 == 0:
+                model.eval()
+                correct = 0 
+                total = 0
+                for features, labels in test_loader:
+                    features = features.to(device)
+                    labels = labels.to(device)
+                    Y_pred = model.forward_pass_params(current_params,features)
+                    loss_value = loss(Y_pred,labels)
+                    _, predicted = torch.max(Y_pred.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+                accuracy = ( 100*correct/total)
+                accuracy_list.append(accuracy)
+                print(f'Epoch [{epoch+1}/{n_epochs}], Step [{i+1}/{len(train_loader)}], Loss: {loss_value.item()}, Test Accuracy: {accuracy}%')
+    return accuracy_list, best_reward
+    
+
+
+
 def quantize_model(model,quant_levels):
     "function to quantize weights of model on a layer by layer basis, quant_levels is the number of quantization steps"
     with torch.no_grad():
