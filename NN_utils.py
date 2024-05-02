@@ -7,6 +7,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 
+#small convnet to save on parameters
 class Tiny_convnet(nn.Module):
       
     def __init__(self):
@@ -74,6 +75,80 @@ class Tiny_convnet(nn.Module):
         logits = self.forward(X)
         return logits
     
+
+#this is a simple single layer feed forward NN with ReLU activation and adjustable hidden layer size
+class Neural_Net(nn.Module):
+    def __init__(self, input_size, hidden_size, n_classes):
+        "init method that defines the NN architecture and inherits from nn.Module"
+        super(Neural_Net, self).__init__()
+        
+        self.NN_stack = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Linear(hidden_size, n_classes),
+            #nn.Softmax(dim=1)
+        )
+        
+        self.num_params = sum(p.data.numel() for p in self.parameters())
+    
+    def forward(self, X):
+        "forward pass"
+        logits = self.NN_stack(X)
+        return logits
+    
+    
+    def reset_weights(self):
+        "method to reset the weights of the NN"
+        for layer in self.NN_stack:
+            if isinstance(layer,nn.Linear):
+                layer.reset_parameters()
+        for param in self.parameters():
+            param.requires_grad = True
+                
+    def get_params(self):
+        "Method to get parameters from the neural network"
+        params_list = []
+        
+        for param in self.parameters():
+            params_list.append(param.view(-1))
+        
+        full_params = torch.cat(params_list)
+        return full_params
+    
+    def set_params(self,params_to_send):
+        "Method to set parameters params in the neural network for online training. params_to_send is a column vector "
+        idx_prev = 0
+        for param in self.parameters():
+           n_params = param.data.numel()
+           new_param =  torch.reshape(torch.from_numpy(params_to_send[idx_prev: idx_prev + n_params ]),shape=param.data.shape)
+           param.data.copy_(new_param)
+           idx_prev += n_params
+    
+    def forward_pass_params(self,params_to_send,X):
+        "This method is a forward pass that also takes in the parameters of the neural network as a variable, to use in online learning"
+        self.set_params(params_to_send)
+        logits = self.NN_stack(X)
+        return logits
+        
+
+#class for a linear classifier
+
+class Lin_classifier(nn.Module):
+    def __init__(self, input_size, n_classes):
+        super(Lin_classifier,self).__init__()
+        
+        self.NN_stack = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(input_size, n_classes),
+        )
+        
+    def forward(self,X):
+        logits = self.NN_stack(X)
+        return logits
+    
+
+#class  for building train and test loaders so we can use other datasets with pytorch loop
 class Custom_dataset(torch.utils.data.Dataset):
     def __init__(self, features, labels):
         self.features = features
@@ -161,7 +236,7 @@ def train_online_pop_NN(model, n_epochs, train_loader, test_loader, loss, optimi
             best_reward.append(np.min(rewards))
             print('\r{i+1}',end='')
             #print accuracy every 100 steps for the test set
-            if (i+1) % 100 == 0:
+            if (i+1) % 50 == 0:
                 model.eval()
                 correct = 0 
                 total = 0
