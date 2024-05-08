@@ -30,14 +30,16 @@ grid on
 xlabel('Time')
 
 nexttile
-loglog(linspace(1,epochs(1),length(bestrewardcma)),bestrewardcma,LineWidth=2)
+pop_size = 100;
+loglog(linspace(1,epochs(1)*pop_size,length(bestrewardcma)),bestrewardcma,LineWidth=2)
 hold on
-loglog(linspace(1,epochs(2),length(bestrewardpepg)),bestrewardpepg,LineWidth=2)
-loglog(linspace(1,epochs(3),length(bestrewardpso)),bestrewardpso,LineWidth=2)
-loglog(linspace(1,epochs(4),length(bestrewardspsa)),bestrewardspsa,LineWidth=2)
-loglog(linspace(1,epochs(5),length(bestrewardfd1000)),bestrewardfd1000,LineWidth=2)
-loglog(linspace(1,epochs(6),length(bestrewardfd1)),bestrewardfd1,LineWidth=2)
+loglog(linspace(1,epochs(2)*pop_size,length(bestrewardpepg)),bestrewardpepg,LineWidth=2)
+loglog(linspace(1,epochs(3)*pop_size,length(bestrewardpso)),bestrewardpso,LineWidth=2)
+loglog(linspace(1,epochs(4)*2,length(bestrewardspsa)),bestrewardspsa,LineWidth=2)
+loglog(linspace(1,epochs(5)*2*1000,length(bestrewardfd1000)),bestrewardfd1000,LineWidth=2)
+loglog(linspace(1,epochs(6)*2,length(bestrewardfd1)),bestrewardfd1,LineWidth=2)
 grid on
 ylim([1e-4 ,2*1e3])
 
 xlabel('# of function evals')
+legend('CMAES','PEPG','PSO','SPSA','FD-1000','FD-1')
