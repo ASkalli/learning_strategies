@@ -1,5 +1,5 @@
 figure
-t = tiledlayout(1,3,'TileSpacing','Compact','Padding','Compact');
+t = tiledlayout(1,2,'TileSpacing','Compact','Padding','Compact');
 
 set(gcf,'color','w');
 nexttile
@@ -15,7 +15,7 @@ loglog(bestrewardfd1,LineWidth=2)
 grid on
 ylabel('Score')
 xlabel('Epochs')
-
+set(gca,'Fontsize',16)
 nexttile
 
 loglog(linspace(0,time(1),length(bestrewardcma)),bestrewardcma,LineWidth=2)
@@ -28,16 +28,21 @@ loglog(linspace(0,time(6),length(bestrewardfd1)),bestrewardfd1,LineWidth=2)
 %ylim([1e-4 ,2*1e3])
 grid on
 xlabel('Time')
+set(gca,'Fontsize',16)
 
-nexttile
-loglog(linspace(1,epochs(1),length(bestrewardcma))*100,bestrewardcma,LineWidth=2)
-hold on
-loglog(linspace(1,epochs(2),length(bestrewardpepg))*100,bestrewardpepg,LineWidth=2)
-loglog(linspace(1,epochs(3),length(bestrewardpso))*100,bestrewardpso,LineWidth=2)
-loglog(linspace(1,epochs(4),length(bestrewardspsalocal))*2,bestrewardspsalocal,LineWidth=2)
-loglog(linspace(1,epochs(5),length(bestrewardfd1000))*1000,bestrewardfd1000,LineWidth=2)
-loglog(linspace(1,epochs(6),length(bestrewardfd1))*2,bestrewardfd1,LineWidth=2)
-grid on
-%ylim([1e-4 ,2*1e3])
+% nexttile
+% pop_size = 100;
+% loglog(linspace(1,epochs(1),length(bestrewardcma))*pop_size,bestrewardcma,LineWidth=2)
+% hold on
+% loglog(linspace(1,epochs(2),length(bestrewardpepg))*pop_size,bestrewardpepg,LineWidth=2)
+% loglog(linspace(1,epochs(3),length(bestrewardpso))*pop_size,bestrewardpso,LineWidth=2)
+% loglog(linspace(1,epochs(4),length(bestrewardspsalocal))*2,bestrewardspsalocal,LineWidth=2)
+% loglog(linspace(1,epochs(5),length(bestrewardfd1000))*2*1000,bestrewardfd1000,LineWidth=2)
+% loglog(linspace(1,epochs(6),length(bestrewardfd1))*2,bestrewardfd1,LineWidth=2)
+% grid on
+% %ylim([1e-4 ,2*1e3])
+% 
+% xlabel('# of function evals')
+legend('CMAES','PEPG','PSO','SPSA','FD-1000','FD-1')
 
-xlabel('# of function evals')
+set(gca,'Fontsize',18)

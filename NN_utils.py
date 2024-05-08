@@ -313,6 +313,72 @@ def train_online_SPSA_NN(model, n_epochs, train_loader, test_loader, loss, spsa_
     return accuracy_list, best_reward
     
 
+def train_online_FD_NN(model,n_params, n_epochs, train_loader, test_loader, loss, FD_optimizer,adam_optimizer):
+    "function to train a model using the population based training algorithm,  returns the accuracy and best reward lists"
+    N_dim =  n_params
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model.to(device)
+
+    print(f"Using {device} device")
+    print(model)
+    
+    best_reward = []
+    accuracy_list = []
+    for epoch in range(n_epochs):
+        model.eval()
+        for i, (features,labels) in enumerate(train_loader):
+            
+            grad_FD = np.zeros([N_dim,1])
+            FD_optimizer.generate_perturb_idx()
+            
+            for k in range(len(FD_optimizer.perturb_idx)):
+                #perturb parameters
+                params_plus, params_minus = FD_optimizer.perturb_parameters() 
+                #compute rewards / value of function to optimize
+                if device == 'cuda':
+                    features = features.to(device)
+                    labels = labels.to(device)
+                    Y_pred_plus = model.forward_pass_params(params_plus,features)
+                    Y_pred_minus = model.forward_pass_params(params_minus,features)
+                if device == 'cpu':
+                    Y_pred_plus = model.forward_pass_params(params_plus,features)
+                    Y_pred_minus = model.forward_pass_params(params_minus,features)
+                    
+                loss_value_plus = loss(Y_pred_plus,labels)
+                loss_value_minus = loss(Y_pred_minus,labels)
+                
+                reward_plus = loss_value_plus.detach().cpu().item()
+                reward_minus = loss_value_minus.detach().cpu().item()
+
+                # give rewards to optimizer for adaptation and mutation 
+                grad_FD[FD_optimizer.perturb_idx[k]] = FD_optimizer.approximate_gradient(reward_plus ,reward_minus)
+
+            step = adam_optimizer.step(grad_FD.squeeze())
+            
+            current_params= FD_optimizer.update_parameters_step(step).squeeze()
+            #current_params= FD_optimizer.update_parameters(grad_FD.squeeze())
+            
+            best_reward.append(np.min([reward_plus,reward_minus]))
+            print('\r{i+1}',end='')
+            #print accuracy every 100 steps for the test set
+            if (i+1) % 100 == 0:
+                model.eval()
+                correct = 0 
+                total = 0
+                for features, labels in test_loader:
+                    features = features.to(device)
+                    labels = labels.to(device)
+                    Y_pred = model.forward_pass_params(current_params,features)
+                    loss_value = loss(Y_pred,labels)
+                    _, predicted = torch.max(Y_pred.data, 1)
+                    total += labels.size(0)
+                    correct += (predicted == labels).sum().item()
+                accuracy = ( 100*correct/total)
+                accuracy_list.append(accuracy)
+                print(f'Epoch [{epoch+1}/{n_epochs}], Step [{i+1}/{len(train_loader)}], Loss: {loss_value.item()}, Test Accuracy: {accuracy}%')
+    return accuracy_list, best_reward
+    
+
 
 
 def quantize_model(model,quant_levels):
