@@ -270,9 +270,9 @@ def train_online_FD_NN(model,n_params, n_epochs, train_loader, test_loader, loss
             grad_FD = np.zeros([N_dim,1])
             FD_optimizer.generate_perturb_idx()
             
-            for k in range(len(FD_optimizer.perturb_idx)):
+            for k in FD_optimizer.perturb_idx:
                 #perturb parameters
-                params_plus, params_minus = FD_optimizer.perturb_parameters() 
+                params_plus, params_minus = FD_optimizer.perturb_parameters(k) 
                 #compute rewards / value of function to optimize
                 if device == 'cuda':
                     features = features.to(device)
@@ -290,7 +290,7 @@ def train_online_FD_NN(model,n_params, n_epochs, train_loader, test_loader, loss
                 reward_minus = loss_value_minus.detach().cpu().item()
 
                 # give rewards to optimizer for adaptation and mutation 
-                grad_FD[FD_optimizer.perturb_idx[k]] = FD_optimizer.approximate_gradient(reward_plus ,reward_minus)
+                grad_FD[k] = FD_optimizer.approximate_gradient(reward_plus ,reward_minus)
 
             step = adam_optimizer.step(grad_FD.squeeze())
             
@@ -316,7 +316,6 @@ def train_online_FD_NN(model,n_params, n_epochs, train_loader, test_loader, loss
                 accuracy_list.append(accuracy)
                 print(f'Epoch [{epoch+1}/{n_epochs}], Step [{i+1}/{len(train_loader)}], Loss: {loss_value.item()}, Test Accuracy: {accuracy}%')
     return accuracy_list, best_reward
-    
 
 
 

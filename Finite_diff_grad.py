@@ -19,30 +19,33 @@ class FD_opt:
         self.n_perturb = n_perturb   # Number of parameters to perturb
 
     def generate_perturb_idx(self):
-        "Generates a random perturbation of indices of the parameters to perturb, these indices are used to build the gradient vector"
+        "Generates a random permutation of indices of the parameters to perturb, these indices are used to build the gradient vector"
         self.perturb_idx = np.random.permutation(self.params.shape[0])[:self.n_perturb]
         
          
-    def perturb_parameters(self):
+    def perturb_parameters(self,index):
         """Perturb parameters and return them: params +/- epsilon."""
-        params_plus = self.params + self.epsilon 
-        params_minus = self.params - self.epsilon 
-        return params_plus,params_minus
+              
+        params_plus = np.copy(self.params)
+        params_minus = np.copy(self.params)
+        params_plus[index] += self.epsilon
+        params_minus[index] -= self.epsilon
+        
+        return params_plus, params_minus
 
-    def approximate_gradient_func(self, loss_func):
-        """Approximate the gradient of the loss function; if you have a loss function you can pass as parameter"""
-        params_plus = self.params + self.epsilon  
-        params_minus = self.params - self.epsilon  
+    def approximate_gradient_component(self, loss_func, index):
+        """Calculate the gradient component for a single parameter index."""
+        params_plus, params_minus = self.perturb_parameters(index)
         loss_plus = loss_func(params_plus)
         loss_minus = loss_func(params_minus)
-        gradient = (loss_plus - loss_minus) / (2 * self.epsilon )
-        return gradient
+        gradient_component = (loss_plus - loss_minus) / (2 * self.epsilon)
+        return gradient_component
     
     def approximate_gradient(self,loss_plus ,loss_minus):
         """Approximate the gradient of the loss function, with precalculated loss values"""
         
-        gradient = ((loss_plus - loss_minus) / (2 * self.epsilon ))
-        return gradient
+        gradient_component = ((loss_plus - loss_minus) / (2 * self.epsilon ))
+        return gradient_component
     
     def update_parameters(self, gradient):
         """Update the parameters based on the approximated gradient."""
