@@ -23,6 +23,15 @@ time_FD = 18060;
 
 figure; 
 
+BPtestacc = [10;10; BPtestacc];
+PEPGtestaccbest = [10;10; PEPGtestaccbest];
+CMAtestacc = [10;10; CMAtestacc];
+PSOconvnet = [10;10; PSOconvnet];
+SPSAtestacc = [10;10; SPSAtestacc];
+FD1testaccMNIST = [10;10; FD1testaccMNIST];
+
+%new focus detectors high bandwithds modulators DFB 
+
 set(gcf,'color','w');
 
 loglog(linspace(0,time_BP,length(BPtestacc)),BPtestacc,LineWidth=2)
@@ -36,3 +45,14 @@ loglog(linspace(0,time_FD,length(FD1testaccMNIST)),FD1testaccMNIST,LineWidth=2)
 ylabel('Accuracy [%]')
 xlabel('Time [s]')
 legend('BP','PEPG','CMAES','PSO','SPSA','FD-1')
+
+figure 
+
+pop_size = [5 10 20 50 100 200 300 500];
+n_params = 11274;
+acc_vec = [86.81 91.23 95.55 97.82 97.96 97.21 98.15 98.11];
+
+plot(pop_size/n_params,acc_vec,LineWidth=2)
+
+ylabel('Accuracy [%]')
+xlabel('Pop size ratio [%]')
