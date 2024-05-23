@@ -50,9 +50,13 @@ figure
 
 pop_size = [5 10 20 50 100 200 300 500];
 n_params = 11274;
-acc_vec = [86.81 91.23 95.55 97.82 97.96 97.21 98.15 98.11];
 
-plot(100*pop_size/n_params,acc_vec,LineWidth=2)
+acc_vec_mnist = [86.81 91.23 95.55 97.82 97.96 97.7 98.15 98.11];
+acc_vec_fashion = [75.86 78.84 80.93 84.58 84.91 86.61 86.62 86.71];
+
+plot(100*pop_size/n_params,acc_vec_mnist,LineWidth=2)
+hold on 
+plot(100*pop_size/n_params,acc_vec_fashion,LineWidth=2)
 
 ylabel('Accuracy [%]')
 xlabel('Pop size ratio [%]')
