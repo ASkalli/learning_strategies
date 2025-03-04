@@ -54,9 +54,9 @@ These tasks are handled by the notebooks, where optimizers from the Python scrip
 ## Optimization Algorithms
 
 The following optimization algorithms are implemented and available as Python classes:
-- **CMA-ES (Covariance Matrix Adaptation Evolution Strategy)**: A powerful black-box optimization method, works well but is a complete pain if dimensions are too high (covariance matrix scales quasratically with problem dimension) ... 
+- **CMA-ES (Covariance Matrix Adaptation Evolution Strategy)**: A powerful black-box optimization method, works well but is a complete pain if dimensions are too high (covariance matrix scales quadratically with problem dimension) ... 
 - **PSO (Particle Swarm Optimization)**: A population-based optimization algorithm, quite fast but hyperparameters can be tricky to optimize, hard to develop are nice intuition for them...
-- **PEPG (Policy Evolution with Parameter Perturbations)**: An evolutionary optimization method, the michael jordan of algortihms, works like CMA-ES but less complicated and to be honest in my experience it works better in practice especially no quadratic scalign like CMA-ES...
+- **PEPG (Policy Evolution with Parameter Perturbations)**: An evolutionary optimization method, the michael jordan of algortihms, works like CMA-ES but less complicated and to be honest in my experience it works better in practice especially no quadratic scaling like CMA-ES...
 - **SPSA (Simultaneous Perturbation Stochastic Approximation)**: Gradient approximation technique for optimization, great if you want stuff to go fast and still offers reliable performance ! 
 - **Finite Difference Gradient**: A method that estimates gradients through small perturbations in each parameter's direction, this one was for the fun of it, it's ok but in practise I wouldn't use it and just use SPSA.
 
@@ -91,6 +91,7 @@ CMAES:
 Here are some really nice tutorials by the inventor of CMAES Nikolaus Hansen, he also provides matlab and python code on his website, I used that as a basis for the python class I included.
 - https://arxiv.org/abs/1604.00772
 - https://www.youtube.com/watch?v=7VBKLH3oDuw
+- 
 A series of youtube videos by a youtuber called cabagecat that explains the blog more in detail and is nice for intuition
 - https://www.youtube.com/watch?v=5qCAOyNJROg
 
