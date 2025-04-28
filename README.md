@@ -1,6 +1,6 @@
 # Learning Strategies
 
-This repository contains implementations of various optimization strategies and their application to toy functions and neural networks. The optimization algorithms, such as **CMA-ES**, **Particle Swarm Optimization (PSO)**, **SPSA**, and others, are encapsulated in Python classes and are used within Jupyter notebooks to demonstrate their effectiveness on different tasks, including training neural networks.
+This repository contains implementations of various optimization strategies and their application to toy functions and neural networks. The optimization algorithms, such as **CMA-ES**, **Particle Swarm Optimization (PSO)**, **SPSA**, and others, are encapsulated in Python classes and are used within Jupyter notebooks to demonstrate their effectiveness on different tasks, including training neural networks. The main results from this repository can be found in this paper https://arxiv.org/abs/2503.16943 , in chapters 2,3 and 4. We then applied these algorithms to an physical optical neural network fully implemented in hardware and compared them in terms of performance and convergence efficiency. 
 
 ## Table of Contents
 - [Installation](#installation)
